@@ -16,9 +16,10 @@ def read_memos
 end
 
 def find_memo(memos, id)
-  memos.find do |memo|
-    id.to_i == memo['id']
+  memo_hash = memos.to_h do |memo|
+    [memo['id'], memo]
   end
+  memo_hash[id.to_i]
 end
 
 def get_next_id(memos)
