@@ -28,7 +28,7 @@ def get_next_id(memos)
 end
 
 def write_json(memos)
-  File.write(DATA_FILE, JSON.pretty_generate(memos))
+  File.write(DATA_FILE, JSON.generate(memos))
 end
 
 helpers do
