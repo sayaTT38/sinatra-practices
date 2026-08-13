@@ -7,7 +7,12 @@ require 'json'
 DATA_FILE = File.join(__dir__, 'memos.json')
 
 def read_memos
-  JSON.parse(File.read(DATA_FILE))
+  if File.exist?(DATA_FILE)
+    JSON.parse(File.read(DATA_FILE))
+  else
+    write_json([])
+    []
+  end
 end
 
 def find_memo(memos, id)
