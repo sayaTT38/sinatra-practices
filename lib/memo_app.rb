@@ -8,22 +8,19 @@ DATA_FILE = File.join(__dir__, 'memos.json')
 
 def read_memos
   if File.exist?(DATA_FILE)
-    JSON.parse(File.read(DATA_FILE))
+    JSON.parse(File.read(DATA_FILE)).transform_keys(&:to_i)
   else
-    write_json([])
-    []
+    write_json({})
+    {}
   end
 end
 
 def find_memo(memos, id)
-  memo_hash = memos.to_h do |memo|
-    [memo['id'], memo]
-  end
-  memo_hash[id.to_i]
+  memos[id.to_i]
 end
 
 def get_next_id(memos)
-  max_id = memos.map { |memo| memo['id'] }.max
+  max_id = memos.keys.max
   max_id.nil? ? 1 : max_id + 1
 end
 
@@ -49,7 +46,7 @@ end
 post '/memos' do
   memos = read_memos
   next_id = get_next_id(memos)
-  memos << { 'id' => next_id, 'title' => params['title'], 'content' => params['content'] }
+  memos[next_id] = { 'id' => next_id, 'title' => params['title'], 'content' => params['content'] }
   write_json(memos)
   redirect '/memos'
 end
@@ -66,8 +63,7 @@ end
 
 delete '/memos/:id' do
   memos = read_memos
-  memo = find_memo(memos, params['id'])
-  memos.delete(memo)
+  memos.delete(params['id'].to_i)
   write_json(memos)
   redirect '/memos'
 end
