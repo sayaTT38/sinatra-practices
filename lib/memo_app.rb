@@ -6,26 +6,34 @@ require 'json'
 
 DATA_FILE = File.join(__dir__, 'memos.json')
 
-def read_memos
+def read_data
   if File.exist?(DATA_FILE)
-    JSON.parse(File.read(DATA_FILE)).transform_keys(&:to_i)
+    JSON.parse(File.read(DATA_FILE))
   else
-    write_json({})
-    {}
+    data = {
+      'last_id' => 0,
+      'memos' => {}
+    }
+    write_json(data)
+    data
   end
+end
+
+def read_memos(data)
+  memos = data['memos']
+  memos.transform_keys(&:to_i)
 end
 
 def find_memo(memos, id)
   memos[id.to_i]
 end
 
-def get_next_id(memos)
-  max_id = memos.keys.max
-  max_id.nil? ? 1 : max_id + 1
+def get_next_id(data)
+  data['last_id'] + 1
 end
 
-def write_json(memos)
-  File.write(DATA_FILE, JSON.generate(memos))
+def write_json(data)
+  File.write(DATA_FILE, JSON.generate(data))
 end
 
 helpers do
@@ -39,15 +47,19 @@ get '/' do
 end
 
 get '/memos' do
-  @memos = read_memos
+  data = read_data
+  @memos = read_memos(data)
   erb :top
 end
 
 post '/memos' do
-  memos = read_memos
-  next_id = get_next_id(memos)
+  data = read_data
+  memos = read_memos(data)
+  next_id = get_next_id(data)
+  data['last_id'] = next_id
   memos[next_id] = { 'id' => next_id, 'title' => params['title'], 'content' => params['content'] }
-  write_json(memos)
+  data['memos'] = memos
+  write_json(data)
   redirect '/memos'
 end
 
@@ -56,29 +68,35 @@ get '/memos/new' do
 end
 
 get '/memos/:id' do
-  memos = read_memos
+  data = read_data
+  memos = read_memos(data)
   @memo = find_memo(memos, params['id'])
   erb :show
 end
 
 delete '/memos/:id' do
-  memos = read_memos
+  data = read_data
+  memos = read_memos(data)
   memos.delete(params['id'].to_i)
-  write_json(memos)
+  data['memos'] = memos
+  write_json(data)
   redirect '/memos'
 end
 
 patch '/memos/:id' do
-  memos = read_memos
+  data = read_data
+  memos = read_memos(data)
   memo = find_memo(memos, params['id'])
   memo['title'] = params['title']
   memo['content'] = params['content']
-  write_json(memos)
+  data['memos'] = memos
+  write_json(data)
   redirect "/memos/#{params['id']}"
 end
 
 get '/memos/:id/edit' do
-  memos = read_memos
+  data = read_data
+  memos = read_memos(data)
   @memo = find_memo(memos, params['id'])
   erb :edit
 end
