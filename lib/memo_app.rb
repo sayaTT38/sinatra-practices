@@ -24,7 +24,7 @@ def find_memo(memos, id)
 end
 
 def get_next_id(data)
-  (data['last_id'] + 1).to_s
+  data['last_id'] + 1
 end
 
 def write_json(data)
@@ -52,7 +52,7 @@ post '/memos' do
   memos = data['memos']
   next_id = get_next_id(data)
   data['last_id'] = next_id
-  memos[next_id] = { 'id' => next_id, 'title' => params['title'], 'content' => params['content'] }
+  memos[next_id.to_s] = { 'id' => next_id, 'title' => params['title'], 'content' => params['content'] }
   data['memos'] = memos
   write_json(data)
   redirect '/memos'
