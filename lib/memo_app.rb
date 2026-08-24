@@ -45,7 +45,6 @@ post '/memos' do
   next_id = data['last_id'] + 1
   data['last_id'] = next_id
   memos[next_id.to_s] = { 'id' => next_id, 'title' => params['title'], 'content' => params['content'] }
-  data['memos'] = memos
   write_json(data)
   redirect '/memos'
 end
@@ -65,7 +64,6 @@ delete '/memos/:id' do
   data = read_data
   memos = data['memos']
   memos.delete(params['id'])
-  data['memos'] = memos
   write_json(data)
   redirect '/memos'
 end
@@ -76,7 +74,6 @@ patch '/memos/:id' do
   memo = memos[params['id']]
   memo['title'] = params['title']
   memo['content'] = params['content']
-  data['memos'] = memos
   write_json(data)
   redirect "/memos/#{params['id']}"
 end
