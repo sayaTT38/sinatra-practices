@@ -19,17 +19,12 @@ def read_data
   end
 end
 
-def read_memos(data)
-  memos = data['memos']
-  memos.transform_keys(&:to_i)
-end
-
 def find_memo(memos, id)
-  memos[id.to_i]
+  memos[id]
 end
 
 def get_next_id(data)
-  data['last_id'] + 1
+  (data['last_id'] + 1).to_s
 end
 
 def write_json(data)
@@ -48,13 +43,13 @@ end
 
 get '/memos' do
   data = read_data
-  @memos = read_memos(data)
+  @memos = data['memos']
   erb :top
 end
 
 post '/memos' do
   data = read_data
-  memos = read_memos(data)
+  memos = data['memos']
   next_id = get_next_id(data)
   data['last_id'] = next_id
   memos[next_id] = { 'id' => next_id, 'title' => params['title'], 'content' => params['content'] }
@@ -69,15 +64,15 @@ end
 
 get '/memos/:id' do
   data = read_data
-  memos = read_memos(data)
+  memos = data['memos']
   @memo = find_memo(memos, params['id'])
   erb :show
 end
 
 delete '/memos/:id' do
   data = read_data
-  memos = read_memos(data)
-  memos.delete(params['id'].to_i)
+  memos = data['memos']
+  memos.delete(params['id'])
   data['memos'] = memos
   write_json(data)
   redirect '/memos'
@@ -85,7 +80,7 @@ end
 
 patch '/memos/:id' do
   data = read_data
-  memos = read_memos(data)
+  memos = data['memos']
   memo = find_memo(memos, params['id'])
   memo['title'] = params['title']
   memo['content'] = params['content']
@@ -96,7 +91,7 @@ end
 
 get '/memos/:id/edit' do
   data = read_data
-  memos = read_memos(data)
+  memos = data['memos']
   @memo = find_memo(memos, params['id'])
   erb :edit
 end
