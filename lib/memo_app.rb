@@ -19,14 +19,6 @@ def read_data
   end
 end
 
-def find_memo(memos, id)
-  memos[id]
-end
-
-def get_next_id(data)
-  data['last_id'] + 1
-end
-
 def write_json(data)
   File.write(DATA_FILE, JSON.generate(data))
 end
@@ -50,7 +42,7 @@ end
 post '/memos' do
   data = read_data
   memos = data['memos']
-  next_id = get_next_id(data)
+  next_id = data['last_id'] + 1
   data['last_id'] = next_id
   memos[next_id.to_s] = { 'id' => next_id, 'title' => params['title'], 'content' => params['content'] }
   data['memos'] = memos
@@ -65,7 +57,7 @@ end
 get '/memos/:id' do
   data = read_data
   memos = data['memos']
-  @memo = find_memo(memos, params['id'])
+  @memo = memos[params['id']]
   erb :show
 end
 
@@ -81,7 +73,7 @@ end
 patch '/memos/:id' do
   data = read_data
   memos = data['memos']
-  memo = find_memo(memos, params['id'])
+  memo = memos[params['id']]
   memo['title'] = params['title']
   memo['content'] = params['content']
   data['memos'] = memos
@@ -92,6 +84,6 @@ end
 get '/memos/:id/edit' do
   data = read_data
   memos = data['memos']
-  @memo = find_memo(memos, params['id'])
+  @memo = memos[params['id']]
   erb :edit
 end
