@@ -4,23 +4,33 @@ require 'sinatra'
 require 'sinatra/reloader'
 require 'json'
 
-DATA_FILE = File.join(__dir__, 'memos.json')
+MEMOS_FILE = File.join(__dir__, 'memos.json')
+LAST_ID_FILE = File.join(__dir__, 'last_id.json')
 
-def read_data
-  if File.exist?(DATA_FILE)
-    JSON.parse(File.read(DATA_FILE))
+def read_memos
+  if File.exist?(MEMOS_FILE)
+    JSON.parse(File.read(MEMOS_FILE))
   else
-    data = {
-      'last_id' => 0,
-      'memos' => {}
-    }
-    write_json(data)
+    data = {}
+    write_json(MEMOS_FILE, data)
     data
   end
 end
 
-def write_json(data)
-  File.write(DATA_FILE, JSON.generate(data))
+def read_last_id
+  if File.exist?(LAST_ID_FILE)
+    JSON.parse(File.read(LAST_ID_FILE))
+  else
+    data = {
+      'last_id' => 0
+    }
+    write_json(LAST_ID_FILE, data)
+    data
+  end
+end
+
+def write_json(file, data)
+  File.write(file, JSON.generate(data))
 end
 
 helpers do
@@ -34,18 +44,18 @@ get '/' do
 end
 
 get '/memos' do
-  data = read_data
-  @memos = data['memos']
+  @memos = read_memos
   erb :top
 end
 
 post '/memos' do
-  data = read_data
-  memos = data['memos']
-  next_id = data['last_id'] + 1
-  data['last_id'] = next_id
+  memos = read_memos
+  last_id = read_last_id
+  next_id = last_id['last_id'] + 1
+  last_id['last_id'] = next_id
   memos[next_id.to_s] = { 'id' => next_id, 'title' => params['title'], 'content' => params['content'] }
-  write_json(data)
+  write_json(LAST_ID_FILE, last_id)
+  write_json(MEMOS_FILE, memos)
   redirect '/memos'
 end
 
@@ -54,33 +64,29 @@ get '/memos/new' do
 end
 
 get '/memos/:id' do
-  data = read_data
-  memos = data['memos']
+  memos = read_memos
   @memo = memos[params['id']]
   erb :show
 end
 
 delete '/memos/:id' do
-  data = read_data
-  memos = data['memos']
+  memos = read_memos
   memos.delete(params['id'])
-  write_json(data)
+  write_json(MEMOS_FILE, memos)
   redirect '/memos'
 end
 
 patch '/memos/:id' do
-  data = read_data
-  memos = data['memos']
+  memos = read_memos
   memo = memos[params['id']]
   memo['title'] = params['title']
   memo['content'] = params['content']
-  write_json(data)
+  write_json(MEMOS_FILE, memos)
   redirect "/memos/#{params['id']}"
 end
 
 get '/memos/:id/edit' do
-  data = read_data
-  memos = data['memos']
+  memos = read_memos
   @memo = memos[params['id']]
   erb :edit
 end
