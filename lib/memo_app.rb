@@ -12,7 +12,7 @@ def read_memos
     JSON.parse(File.read(MEMOS_FILE))
   else
     data = {}
-    write_json(MEMOS_FILE, data)
+    save_memos(data)
     data
   end
 end
@@ -31,6 +31,10 @@ end
 
 def write_json(file, data)
   File.write(file, JSON.generate(data))
+end
+
+def save_memos(memos)
+  write_json(MEMOS_FILE, memos)
 end
 
 helpers do
@@ -52,7 +56,7 @@ post '/memos' do
   memos = read_memos
   next_id = create_next_id
   memos[next_id.to_s] = { 'id' => next_id, 'title' => params['title'], 'content' => params['content'] }
-  write_json(MEMOS_FILE, memos)
+  save_memos(memos)
   redirect '/memos'
 end
 
@@ -69,7 +73,7 @@ end
 delete '/memos/:id' do
   memos = read_memos
   memos.delete(params['id'])
-  write_json(MEMOS_FILE, memos)
+  save_memos(memos)
   redirect '/memos'
 end
 
@@ -78,7 +82,7 @@ patch '/memos/:id' do
   memo = memos[params['id']]
   memo['title'] = params['title']
   memo['content'] = params['content']
-  write_json(MEMOS_FILE, memos)
+  save_memos(memos)
   redirect "/memos/#{params['id']}"
 end
 
