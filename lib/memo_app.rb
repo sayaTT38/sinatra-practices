@@ -17,7 +17,7 @@ def read_memos
   end
 end
 
-def create_next_id
+def generate_next_id
   last_id =
     if File.exist?(LAST_ID_FILE)
       JSON.parse(File.read(LAST_ID_FILE))
@@ -54,7 +54,7 @@ end
 
 post '/memos' do
   memos = read_memos
-  next_id = create_next_id
+  next_id = generate_next_id
   memos[next_id.to_s] = { 'id' => next_id, 'title' => params['title'], 'content' => params['content'] }
   save_memos(memos)
   redirect '/memos'
