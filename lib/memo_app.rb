@@ -9,7 +9,7 @@ LAST_ID_FILE = File.join(__dir__, 'last_id.json')
 
 def read_memos
   if File.exist?(MEMOS_FILE)
-    JSON.parse(File.read(MEMOS_FILE))
+    JSON.parse(File.read(MEMOS_FILE)).transform_keys(&:to_i)
   else
     data = {}
     save_memos(data)
@@ -55,7 +55,7 @@ end
 post '/memos' do
   memos = read_memos
   next_id = generate_next_id
-  memos[next_id.to_s] = { 'id' => next_id, 'title' => params['title'], 'content' => params['content'] }
+  memos[next_id] = { 'id' => next_id, 'title' => params['title'], 'content' => params['content'] }
   save_memos(memos)
   redirect '/memos'
 end
@@ -66,20 +66,20 @@ end
 
 get '/memos/:id' do
   memos = read_memos
-  @memo = memos[params['id']]
+  @memo = memos[params['id'].to_i]
   erb :show
 end
 
 delete '/memos/:id' do
   memos = read_memos
-  memos.delete(params['id'])
+  memos.delete(params['id'].to_i)
   save_memos(memos)
   redirect '/memos'
 end
 
 patch '/memos/:id' do
   memos = read_memos
-  memo = memos[params['id']]
+  memo = memos[params['id'].to_i]
   memo['title'] = params['title']
   memo['content'] = params['content']
   save_memos(memos)
@@ -88,6 +88,6 @@ end
 
 get '/memos/:id/edit' do
   memos = read_memos
-  @memo = memos[params['id']]
+  @memo = memos[params['id'].to_i]
   erb :edit
 end
