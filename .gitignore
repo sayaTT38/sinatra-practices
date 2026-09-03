@@ -1,0 +1,4 @@
+.vscode/
+.DS_Store
+lib/memos.json
+lib/last_id.json

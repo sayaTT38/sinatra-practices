@@ -1,0 +1,11 @@
+<p>タイトル：<br>
+<%= h(@memo['title']) %></p>
+<p>内容：<br>
+<%= h(@memo['content']) %></p>
+
+<a href="/memos/<%= @memo['id'] %>/edit">変更</a>
+
+<form action="/memos/<%= @memo['id'] %> " method="POST">
+<input type="hidden" name="_method" value="DELETE">
+<p><input type="submit" value="削除"></p>
+</form>
