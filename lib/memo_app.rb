@@ -2,39 +2,43 @@
 
 require 'sinatra'
 require 'sinatra/reloader'
-require 'json'
+require 'pg'
 
-MEMOS_FILE = File.join(__dir__, 'memos.json')
-LAST_ID_FILE = File.join(__dir__, 'last_id.json')
+DB_NAME = 'memo_app'
+TABLE_NAME = 'memos'
 
-def read_memos
-  if File.exist?(MEMOS_FILE)
-    JSON.parse(File.read(MEMOS_FILE)).transform_keys(&:to_i)
-  else
-    data = {}
-    save_memos(data)
-    data
-  end
+def connect_db
+  PG.connect(
+    dbname: DB_NAME,
+    user: 'postgres',
+    password: ENV['DB_PASSWORD']
+  )
 end
 
-def generate_next_id
-  last_id =
-    if File.exist?(LAST_ID_FILE)
-      JSON.parse(File.read(LAST_ID_FILE))
-    else
-      0
-    end
-  next_id = last_id + 1
-  write_json(LAST_ID_FILE, next_id)
-  next_id
+def read_memos(conn)
+  result = conn.exec("SELECT * FROM #{TABLE_NAME};")
+  result.to_a
 end
 
-def write_json(file, data)
-  File.write(file, JSON.generate(data))
+def delete_memo(conn, id)
+  conn.exec_params(
+    "DELETE FROM #{TABLE_NAME} WHERE id = $1;",
+    [id]
+  )
 end
 
-def save_memos(memos)
-  write_json(MEMOS_FILE, memos)
+def save_new_memo(conn, title, content)
+  conn.exec_params(
+    "INSERT INTO #{TABLE_NAME} (title,content) values ($1, $2);",
+    [title, content]
+  )
+end
+
+def edit_memo(conn, id, title, content)
+  conn.exec_params(
+    "UPDATE #{TABLE_NAME} SET title = $1, content = $2 WHERE id = $3;",
+    [title, content, id]
+  )
 end
 
 helpers do
@@ -48,15 +52,16 @@ get '/' do
 end
 
 get '/memos' do
-  @memos = read_memos
+  conn = connect_db
+  @memos = read_memos(conn)
+  conn.close
   erb :top
 end
 
 post '/memos' do
-  memos = read_memos
-  next_id = generate_next_id
-  memos[next_id] = { 'id' => next_id, 'title' => params['title'], 'content' => params['content'] }
-  save_memos(memos)
+  conn = connect_db
+  save_new_memo(conn, params['title'], params['content'])
+  conn.close
   redirect '/memos'
 end
 
@@ -65,29 +70,31 @@ get '/memos/new' do
 end
 
 get '/memos/:id' do
-  memos = read_memos
-  @memo = memos[params['id'].to_i]
+  conn = connect_db
+  memos = read_memos(conn)
+  @memo = memos.find { |memo| memo['id'].to_i == params['id'].to_i }
+  conn.close
   erb :show
 end
 
 delete '/memos/:id' do
-  memos = read_memos
-  memos.delete(params['id'].to_i)
-  save_memos(memos)
+  conn = connect_db
+  delete_memo(conn, params['id'].to_i)
+  conn.close
   redirect '/memos'
 end
 
 patch '/memos/:id' do
-  memos = read_memos
-  memo = memos[params['id'].to_i]
-  memo['title'] = params['title']
-  memo['content'] = params['content']
-  save_memos(memos)
+  conn = connect_db
+  edit_memo(conn, params['id'].to_i, params['title'], params['content'])
+  conn.close
   redirect "/memos/#{params['id']}"
 end
 
 get '/memos/:id/edit' do
-  memos = read_memos
-  @memo = memos[params['id'].to_i]
+  conn = connect_db
+  memos = read_memos(conn)
+  @memo = memos.find { |memo| memo['id'].to_i == params['id'].to_i }
+  conn.close
   erb :edit
 end
