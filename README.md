@@ -21,10 +21,7 @@ $ bundle install
 ### 3. PostgreSQLにDBを作成
 アプリ用のDBとして`memo_app`を作成します。
 ```
-$ psql -U postgres
-```
-```
-postgres=# CREATE DATABASE memo_app;
+$ psql -U postgres -f create_database.sql
 ```
 以下のコマンドでDBが作成できていることを確認します。
 ```
@@ -37,9 +34,9 @@ postgres=# \l
 postgres=# \q
 ```
 ### 4. テーブルを作成
-以下のコマンドを打ってテーブルを作成します。
+以下のコマンドを打って`memos`テーブルを作成します。
 ```
-$ psql -U postgres -d memo_app -f memo_app.sql
+$ psql -U postgres -d memo_app -f create_table.sql
 ```
 以下のコマンドでテーブルが作成できていることを確認します。
 ```
