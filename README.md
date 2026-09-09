@@ -25,6 +25,9 @@ $ psql -U postgres -f create_database.sql
 ```
 以下のコマンドでDBが作成できていることを確認します。
 ```
+$ psql -U postgres
+```
+```
 postgres=# \l
 ```
 `memo_app`が一覧に表示されていればDBの作成は完了です。
@@ -48,7 +51,7 @@ memo_app=# \dt
 ```
 memo_app=# \d memos
 ```
-`memos`が表示されていればテーブルの作成は完了です。
+`memos`テーブルが表示されていればテーブルの作成は完了です。
 
 以下のコマンドでPostgreSQLとの接続を切断します。
 ```
