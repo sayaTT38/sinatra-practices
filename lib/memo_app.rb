@@ -5,7 +5,6 @@ require 'sinatra/reloader'
 require 'pg'
 
 DB_NAME = 'memo_app'
-TABLE_NAME = 'memos'
 
 def connect_db
   PG.connect(
@@ -16,27 +15,27 @@ def connect_db
 end
 
 def read_memos(conn)
-  result = conn.exec("SELECT * FROM #{TABLE_NAME};")
+  result = conn.exec('SELECT * FROM memos ORDER BY id;')
   result.to_a
 end
 
 def delete_memo(conn, id)
   conn.exec_params(
-    "DELETE FROM #{TABLE_NAME} WHERE id = $1;",
+    'DELETE FROM memos WHERE id = $1;',
     [id]
   )
 end
 
 def save_new_memo(conn, title, content)
   conn.exec_params(
-    "INSERT INTO #{TABLE_NAME} (title,content) values ($1, $2);",
+    'INSERT INTO memos (title,content) values ($1, $2);',
     [title, content]
   )
 end
 
 def edit_memo(conn, id, title, content)
   conn.exec_params(
-    "UPDATE #{TABLE_NAME} SET title = $1, content = $2 WHERE id = $3;",
+    'UPDATE memos SET title = $1, content = $2 WHERE id = $3;',
     [title, content, id]
   )
 end
