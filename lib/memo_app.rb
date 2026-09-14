@@ -28,7 +28,7 @@ end
 
 def save_new_memo(conn, title, content)
   conn.exec_params(
-    'INSERT INTO memos (title,content) values ($1, $2);',
+    'INSERT INTO memos (title, content) values ($1, $2);',
     [title, content]
   )
 end
