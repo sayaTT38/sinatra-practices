@@ -19,6 +19,14 @@ def read_memos(conn)
   result.to_a
 end
 
+def read_memo(conn, id)
+  result = conn.exec_params(
+    'SELECT * FROM memos WHERE id = $1;',
+    [id]
+  )
+  result.first
+end
+
 def delete_memo(conn, id)
   conn.exec_params(
     'DELETE FROM memos WHERE id = $1;',
@@ -70,8 +78,7 @@ end
 
 get '/memos/:id' do
   conn = connect_db
-  memos = read_memos(conn)
-  @memo = memos.find { |memo| memo['id'].to_i == params['id'].to_i }
+  @memo = read_memo(conn, params['id'].to_i)
   conn.close
   erb :show
 end
@@ -92,8 +99,7 @@ end
 
 get '/memos/:id/edit' do
   conn = connect_db
-  memos = read_memos(conn)
-  @memo = memos.find { |memo| memo['id'].to_i == params['id'].to_i }
+  @memo = read_memo(conn, params['id'].to_i)
   conn.close
   erb :edit
 end
