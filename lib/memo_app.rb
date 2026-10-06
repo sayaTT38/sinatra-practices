@@ -7,7 +7,7 @@ require 'pg'
 DB_NAME = 'memo_app'
 
 def connect_db
-  PG.connect(
+  @connect_db ||= PG.connect(
     dbname: DB_NAME,
     user: 'postgres',
     password: ENV['DB_PASSWORD']
@@ -59,16 +59,12 @@ get '/' do
 end
 
 get '/memos' do
-  conn = connect_db
-  @memos = read_memos(conn)
-  conn.close
+  @memos = read_memos(connect_db)
   erb :top
 end
 
 post '/memos' do
-  conn = connect_db
-  save_new_memo(conn, params['title'], params['content'])
-  conn.close
+  save_new_memo(connect_db, params['title'], params['content'])
   redirect '/memos'
 end
 
@@ -77,29 +73,21 @@ get '/memos/new' do
 end
 
 get '/memos/:id' do
-  conn = connect_db
-  @memo = read_memo(conn, params['id'].to_i)
-  conn.close
+  @memo = read_memo(connect_db, params['id'].to_i)
   erb :show
 end
 
 delete '/memos/:id' do
-  conn = connect_db
-  delete_memo(conn, params['id'].to_i)
-  conn.close
+  delete_memo(connect_db, params['id'].to_i)
   redirect '/memos'
 end
 
 patch '/memos/:id' do
-  conn = connect_db
-  edit_memo(conn, params['id'].to_i, params['title'], params['content'])
-  conn.close
+  edit_memo(connect_db, params['id'].to_i, params['title'], params['content'])
   redirect "/memos/#{params['id']}"
 end
 
 get '/memos/:id/edit' do
-  conn = connect_db
-  @memo = read_memo(conn, params['id'].to_i)
-  conn.close
+  @memo = read_memo(connect_db, params['id'].to_i)
   erb :edit
 end
